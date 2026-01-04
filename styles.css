@@ -150,6 +150,10 @@ header h1 {
     .tab-content.active {
         grid-template-columns: 1fr;
     }
+
+    .main-content {
+        margin-bottom: 20px;
+    }
 }
 
 /* Add Expense Section */
@@ -439,32 +443,285 @@ header h1 {
     animation: fadeIn 0.3s ease;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-    header h1 {
-        font-size: 1.8rem;
+/* Responsive - Tablet */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
     }
-    
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .card .amount {
+        font-size: 1.4rem;
+    }
+
+    .tab-content.active {
+        grid-template-columns: 1fr;
+    }
+
+    .add-expense-section,
+    .expenses-list-section {
+        padding: 20px;
+    }
+
+    .list-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-group {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .date-filter {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .date-filter input[type="date"] {
+        flex: 1;
+    }
+
+    .filter-group select {
+        width: 100%;
+    }
+
+    .monthly-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .category-bar {
+        flex-wrap: wrap;
+    }
+
+    .category-bar .label {
+        min-width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .category-bar .amount {
+        min-width: auto;
+    }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    header {
+        margin-bottom: 20px;
+    }
+
+    header h1 {
+        font-size: 1.6rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .card {
+        padding: 15px 10px;
+        border-radius: 12px;
+    }
+
+    .card h3 {
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    .card .amount {
+        font-size: 1.2rem;
+    }
+
+    .tab-navigation {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .tab-btn {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 0.95rem;
+    }
+
+    .add-expense-section,
+    .expenses-list-section,
+    .monthly-section {
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .add-expense-section h2,
+    .list-header h2,
+    .category-breakdown h3,
+    .monthly-expenses-list h3 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    .btn-add {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
     .expense-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
+        padding: 12px;
     }
-    
+
+    .expense-info .description {
+        font-size: 0.95rem;
+    }
+
+    .expense-info .details {
+        font-size: 0.8rem;
+    }
+
+    .expense-info .category-badge {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        margin-left: 5px;
+    }
+
     .expense-amount {
+        font-size: 1.1rem;
         margin-right: 0;
     }
-    
+
     .expense-actions {
-        align-self: flex-end;
-    }
-    
-    .tab-navigation {
-        flex-direction: column;
-    }
-    
-    .tab-btn {
+        display: flex;
+        justify-content: space-between;
         width: 100%;
+        align-items: center;
+    }
+
+    .btn-delete {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .filter-summary {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        flex-direction: column;
+        gap: 5px;
+        text-align: center;
+    }
+
+    .month-selector {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .month-selector h2 {
+        font-size: 1.1rem;
+        min-width: 150px;
+        order: -1;
+        width: 100%;
+    }
+
+    .month-nav-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .monthly-total,
+    .monthly-avg {
+        padding: 20px;
+    }
+
+    .monthly-total .amount,
+    .monthly-avg .amount {
+        font-size: 1.5rem;
+    }
+
+    .category-bar .bar-container {
+        height: 20px;
+    }
+
+    .btn-clear {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+
+    .db-status {
+        bottom: 10px;
+        right: 10px;
+        padding: 8px 15px;
+        font-size: 0.75rem;
+    }
+
+    .expenses-list {
+        max-height: 400px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+    header h1 {
+        font-size: 1.4rem;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    .card .amount {
+        font-size: 1.3rem;
+    }
+
+    .expense-amount {
+        font-size: 1rem;
     }
 }
 
