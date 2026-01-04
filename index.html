@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Daily Expense Tracker</h1>
+            <p class="subtitle">Track your spending, stay in control</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="daily">📅 Daily View</button>
+            <button class="tab-btn" data-tab="monthly">📊 Monthly View</button>
+        </div>
+
+        <div class="summary-cards">
+            <div class="card total-card">
+                <h3>Total Spent</h3>
+                <p class="amount" id="totalAmount">Rs. 0.00</p>
+            </div>
+            <div class="card today-card">
+                <h3>Today's Spending</h3>
+                <p class="amount" id="todayAmount">Rs. 0.00</p>
+            </div>
+            <div class="card month-card">
+                <h3>This Month</h3>
+                <p class="amount" id="monthAmount">Rs. 0.00</p>
+            </div>
+            <div class="card count-card">
+                <h3>Total Entries</h3>
+                <p class="amount" id="entryCount">0</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Daily View Tab -->
+            <div id="dailyTab" class="tab-content active">
+                <section class="add-expense-section">
+                    <h2>Add New Expense</h2>
+                    <form id="expenseForm">
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" id="description" placeholder="What did you spend on?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" required>
+                                <option value="">Select category</option>
+                                <option value="food">🍔 Food & Dining</option>
+                                <option value="transport">🚗 Transportation</option>
+                                <option value="shopping">🛍️ Shopping</option>
+                                <option value="entertainment">🎬 Entertainment</option>
+                                <option value="bills">📄 Bills & Utilities</option>
+                                <option value="health">💊 Health</option>
+                                <option value="education">📚 Education</option>
+                                <option value="other">📦 Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount (Rs.)</label>
+                            <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+                        <button type="submit" class="btn-add">Add Expense</button>
+                    </form>
+                </section>
+
+                <section class="expenses-list-section">
+                    <div class="list-header">
+                        <h2>Expense History</h2>
+                        <div class="filter-group">
+                            <div class="date-filter">
+                                <label for="filterDate">📅 Date:</label>
+                                <input type="date" id="filterDate">
+                                <button id="clearDateFilter" class="btn-clear-filter" title="Show all dates">✕</button>
+                            </div>
+                            <select id="filterCategory">
+                                <option value="all">All Categories</option>
+                                <option value="food">🍔 Food & Dining</option>
+                                <option value="transport">🚗 Transportation</option>
+                                <option value="shopping">🛍️ Shopping</option>
+                                <option value="entertainment">🎬 Entertainment</option>
+                                <option value="bills">📄 Bills & Utilities</option>
+                                <option value="health">💊 Health</option>
+                                <option value="education">📚 Education</option>
+                                <option value="other">📦 Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="filterSummary" class="filter-summary" style="display: none;">
+                        <span id="filterSummaryText"></span>
+                        <span id="filterSummaryAmount"></span>
+                    </div>
+                    <div id="expensesList" class="expenses-list">
+                        <p class="empty-message">No expenses yet. Start adding your expenses!</p>
+                    </div>
+                    <button id="clearAll" class="btn-clear" style="display: none;">Clear All Expenses</button>
+                </section>
+            </div>
+
+            <!-- Monthly View Tab -->
+            <div id="monthlyTab" class="tab-content">
+                <section class="monthly-section">
+                    <div class="month-selector">
+                        <button id="prevMonth" class="month-nav-btn">◀</button>
+                        <h2 id="currentMonthLabel">January 2026</h2>
+                        <button id="nextMonth" class="month-nav-btn">▶</button>
+                    </div>
+                    
+                    <div class="monthly-summary">
+                        <div class="monthly-total">
+                            <h3>Monthly Total</h3>
+                            <p class="amount" id="monthlyTotalAmount">Rs. 0.00</p>
+                        </div>
+                        <div class="monthly-avg">
+                            <h3>Daily Average</h3>
+                            <p class="amount" id="dailyAvgAmount">Rs. 0.00</p>
+                        </div>
+                    </div>
+
+                    <div class="category-breakdown">
+                        <h3>Category Breakdown</h3>
+                        <div id="categoryChart" class="category-chart"></div>
+                    </div>
+
+                    <div class="monthly-expenses-list">
+                        <h3>All Expenses This Month</h3>
+                        <div id="monthlyExpensesList" class="expenses-list"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
