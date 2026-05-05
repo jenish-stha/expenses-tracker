@@ -11,6 +11,7 @@ const incDescriptionInput = document.getElementById('incDescription');
 const incSourceInput = document.getElementById('incSource');
 const incAmountInput = document.getElementById('incAmount');
 const expensesList = document.getElementById('expensesList');
+const filterType = document.getElementById('filterType');
 const filterCategory = document.getElementById('filterCategory');
 const filterDate = document.getElementById('filterDate');
 const clearDateFilterBtn = document.getElementById('clearDateFilter');
@@ -369,8 +370,15 @@ function updateSummary() {
 }
 
 // Render expenses list
-function renderExpenses(categoryFilter = 'all', dateFilter = null) {
-    let filteredExpenses = expenses.filter(e => e.userId === currentUserId && e.type !== 'income');
+function renderExpenses(categoryFilter = 'all', dateFilter = null, typeFilter = 'expense') {
+    let filteredExpenses = expenses.filter(e => e.userId === currentUserId);
+
+    // Apply transaction type filter
+    if (typeFilter === 'expense') {
+        filteredExpenses = filteredExpenses.filter(expense => expense.type !== 'income');
+    } else if (typeFilter === 'income') {
+        filteredExpenses = filteredExpenses.filter(expense => expense.type === 'income');
+    }
     
     // Apply category filter
     if (categoryFilter !== 'all') {
@@ -389,16 +397,18 @@ function renderExpenses(categoryFilter = 'all', dateFilter = null) {
     if (dateFilter) {
         const totalForDate = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
         filterSummary.classList.remove('is-hidden');
-        filterSummaryText.textContent = `Showing expenses for ${formatDate(dateFilter)}`;
+        const label = typeFilter === 'income' ? 'income' : typeFilter === 'all' ? 'transactions' : 'expenses';
+        filterSummaryText.textContent = `Showing ${label} for ${formatDate(dateFilter)}`;
         filterSummaryAmount.textContent = `Total: ${formatCurrency(totalForDate)}`;
     } else {
         filterSummary.classList.add('is-hidden');
     }
     
     if (filteredExpenses.length === 0) {
+        const label = typeFilter === 'income' ? 'income' : typeFilter === 'all' ? 'transactions' : 'expenses';
         const message = dateFilter 
-            ? `No expenses found for ${formatDate(dateFilter)}` 
-            : 'No expenses found. Start adding your expenses!';
+            ? `No ${label} found for ${formatDate(dateFilter)}` 
+            : `No ${label} found. Start adding your ${label}!`;
         expensesList.innerHTML = `<p class="empty-message">${escapeHtml(message)}</p>`;
         return;
     }
@@ -421,9 +431,10 @@ function renderExpenses(categoryFilter = 'all', dateFilter = null) {
 
 // Apply filters
 function applyFilters() {
+    const typeFilter = filterType ? filterType.value : 'expense';
     const categoryFilter = filterCategory.value;
     const dateFilter = filterDate.value || null;
-    renderExpenses(categoryFilter, dateFilter);
+    renderExpenses(categoryFilter, dateFilter, typeFilter);
 }
 
 // Clear date filter
@@ -645,6 +656,7 @@ function navigateMonth(direction) {
 // Event listeners
 expenseForm.addEventListener('submit', addExpense);
 incomeForm.addEventListener('submit', addIncome);
+if (filterType) filterType.addEventListener('change', applyFilters);
 filterCategory.addEventListener('change', applyFilters);
 filterDate.addEventListener('change', applyFilters);
 clearDateFilterBtn.addEventListener('click', clearDateFilter);
