@@ -53,6 +53,10 @@
                             <input type="text" id="description" placeholder="What did you spend on?" required>
                         </div>
                         <div class="form-group">
+                            <label for="source">Money Source</label>
+                            <input type="text" id="source" placeholder="Salary, pocket money, bank transfer, etc." required>
+                        </div>
+                        <div class="form-group">
                             <label for="category">Category</label>
                             <select id="category" required>
                                 <option value="">Select category</option>
@@ -83,7 +87,7 @@
                                 <input type="date" id="filterDate">
                                 <button id="clearDateFilter" class="btn-clear-filter" title="Show all dates">✕</button>
                             </div>
-                            <select id="filterCategory">
+                            <select id="filterCategory" title="Filter expenses by category">
                                 <option value="all">All Categories</option>
                                 <option value="food">🍔 Food & Dining</option>
                                 <option value="transport">🚗 Transportation</option>
@@ -96,14 +100,14 @@
                             </select>
                         </div>
                     </div>
-                    <div id="filterSummary" class="filter-summary" style="display: none;">
+                    <div id="filterSummary" class="filter-summary is-hidden">
                         <span id="filterSummaryText"></span>
                         <span id="filterSummaryAmount"></span>
                     </div>
                     <div id="expensesList" class="expenses-list">
                         <p class="empty-message">No expenses yet. Start adding your expenses!</p>
                     </div>
-                    <button id="clearAll" class="btn-clear" style="display: none;">Clear All Expenses</button>
+                    <button id="clearAll" class="btn-clear is-hidden">Clear All Expenses</button>
                 </section>
             </div>
 

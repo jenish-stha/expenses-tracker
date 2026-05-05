@@ -314,6 +314,10 @@ header h1 {
     font-size: 1.1rem;
 }
 
+.is-hidden {
+    display: none !important;
+}
+
 .expenses-list {
     max-height: 500px;
     overflow-y: auto;
@@ -354,6 +358,12 @@ header h1 {
 .expense-info .details {
     font-size: 0.85rem;
     color: #888;
+}
+
+.expense-info .source {
+    font-size: 0.8rem;
+    color: #5f6b7a;
+    margin-bottom: 4px;
 }
 
 .expense-info .category-badge {

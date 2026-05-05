@@ -2,6 +2,7 @@
 const expenseForm = document.getElementById('expenseForm');
 const dateInput = document.getElementById('date');
 const descriptionInput = document.getElementById('description');
+const sourceInput = document.getElementById('source');
 const categoryInput = document.getElementById('category');
 const amountInput = document.getElementById('amount');
 const expensesList = document.getElementById('expensesList');
@@ -208,6 +209,21 @@ function formatCurrency(amount) {
     });
 }
 
+// Escape text before placing it into HTML templates
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Resolve a safe category label for display
+function getCategoryLabel(category) {
+    return categoryLabels[category] || categoryLabels.other;
+}
+
 // Format date for display
 function formatDate(dateString) {
     const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
@@ -234,7 +250,7 @@ function updateSummary() {
     entryCountEl.textContent = expenses.length;
     
     // Show/hide clear all button
-    clearAllBtn.style.display = expenses.length > 0 ? 'block' : 'none';
+    clearAllBtn.classList.toggle('is-hidden', expenses.length === 0);
 }
 
 // Render expenses list
@@ -257,18 +273,18 @@ function renderExpenses(categoryFilter = 'all', dateFilter = null) {
     // Update filter summary
     if (dateFilter) {
         const totalForDate = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-        filterSummary.style.display = 'flex';
+        filterSummary.classList.remove('is-hidden');
         filterSummaryText.textContent = `Showing expenses for ${formatDate(dateFilter)}`;
         filterSummaryAmount.textContent = `Total: ${formatCurrency(totalForDate)}`;
     } else {
-        filterSummary.style.display = 'none';
+        filterSummary.classList.add('is-hidden');
     }
     
     if (filteredExpenses.length === 0) {
         const message = dateFilter 
             ? `No expenses found for ${formatDate(dateFilter)}` 
             : 'No expenses found. Start adding your expenses!';
-        expensesList.innerHTML = `<p class="empty-message">${message}</p>`;
+        expensesList.innerHTML = `<p class="empty-message">${escapeHtml(message)}</p>`;
         return;
     }
     
@@ -276,9 +292,10 @@ function renderExpenses(categoryFilter = 'all', dateFilter = null) {
         <div class="expense-item" data-id="${expense.id}">
             <div class="expense-info">
                 <div class="description">
-                    ${expense.description}
-                    <span class="category-badge">${categoryLabels[expense.category]}</span>
+                    ${escapeHtml(expense.description)}
+                    <span class="category-badge">${escapeHtml(getCategoryLabel(expense.category))}</span>
                 </div>
+                <div class="source">Source: ${escapeHtml(expense.source || 'Not specified')}</div>
                 <div class="details">${formatDate(expense.date)}</div>
             </div>
             <div class="expense-amount">${formatCurrency(expense.amount)}</div>
@@ -309,6 +326,7 @@ async function addExpense(e) {
         date: dateInput.value,
         month: getMonthKey(dateInput.value),
         description: descriptionInput.value.trim(),
+        source: sourceInput.value.trim(),
         category: categoryInput.value,
         amount: parseFloat(amountInput.value),
         createdAt: new Date().toISOString()
@@ -433,7 +451,7 @@ function renderCategoryChart(monthExpenses) {
         const percentage = maxTotal > 0 ? (amount / maxTotal) * 100 : 0;
         return `
             <div class="category-bar">
-                <span class="label">${categoryLabels[category]}</span>
+                <span class="label">${escapeHtml(getCategoryLabel(category))}</span>
                 <div class="bar-container">
                     <div class="bar" style="width: ${percentage}%; background: ${categoryColors[category]}"></div>
                 </div>
@@ -457,9 +475,10 @@ function renderMonthlyExpensesList(monthExpenses) {
         <div class="expense-item" data-id="${expense.id}">
             <div class="expense-info">
                 <div class="description">
-                    ${expense.description}
-                    <span class="category-badge">${categoryLabels[expense.category]}</span>
+                    ${escapeHtml(expense.description)}
+                    <span class="category-badge">${escapeHtml(getCategoryLabel(expense.category))}</span>
                 </div>
+                <div class="source">Source: ${escapeHtml(expense.source || 'Not specified')}</div>
                 <div class="details">${formatDate(expense.date)}</div>
             </div>
             <div class="expense-amount">${formatCurrency(expense.amount)}</div>
