@@ -11,6 +11,7 @@ const incDescriptionInput = document.getElementById('incDescription');
 const incSourceInput = document.getElementById('incSource');
 const incAmountInput = document.getElementById('incAmount');
 const expensesList = document.getElementById('expensesList');
+const historyTitle = document.getElementById('historyTitle');
 const filterType = document.getElementById('filterType');
 const filterCategory = document.getElementById('filterCategory');
 const filterDate = document.getElementById('filterDate');
@@ -431,10 +432,22 @@ function renderExpenses(categoryFilter = 'all', dateFilter = null, typeFilter = 
 
 // Apply filters
 function applyFilters() {
-    const typeFilter = filterType ? filterType.value : 'expense';
+    const typeValue = filterType ? filterType.value : 'expense';
     const categoryFilter = filterCategory.value;
     const dateFilter = filterDate.value || null;
-    renderExpenses(categoryFilter, dateFilter, typeFilter);
+
+    // Update history title based on selected transaction type
+    if (historyTitle) {
+        if (typeValue === 'income') {
+            historyTitle.textContent = 'Income History';
+        } else if (typeValue === 'all') {
+            historyTitle.textContent = 'Transaction History';
+        } else {
+            historyTitle.textContent = 'Expense History';
+        }
+    }
+
+    renderExpenses(categoryFilter, dateFilter, typeValue);
 }
 
 // Clear date filter
