@@ -58,11 +58,13 @@ const categoryColors = {
 
 // Database setup
 const DB_NAME = 'ExpenseTrackerDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'expenses';
 let db = null;
 let expenses = [];
 let currentViewMonth = new Date();
+let users = [];
+let currentUserId = null;
 
 // Initialize IndexedDB
 function initDB() {
@@ -89,6 +91,17 @@ function initDB() {
                 store.createIndex('date', 'date', { unique: false });
                 store.createIndex('category', 'category', { unique: false });
                 store.createIndex('month', 'month', { unique: false });
+                store.createIndex('userId', 'userId', { unique: false });
+            } else {
+                // if store exists (upgrade path), try to add index if missing
+                const store = event.target.transaction.objectStore(STORE_NAME);
+                try {
+                    if (!store.indexNames.contains('userId')) {
+                        store.createIndex('userId', 'userId', { unique: false });
+                    }
+                } catch (err) {
+                    // ignore if cannot create (older browsers)
+                }
             }
         };
     });
@@ -112,6 +125,50 @@ function showDBStatus(message, isError = false) {
     }, 3000);
 }
 
+// User management (local only)
+function loadUsersFromStorage() {
+    const raw = localStorage.getItem('users');
+    users = raw ? JSON.parse(raw) : [];
+    if (!users || users.length === 0) {
+        const defaultUser = { id: 'default', name: 'Default' };
+        users = [defaultUser];
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+    const saved = localStorage.getItem('currentUserId');
+    currentUserId = saved || users[0].id;
+}
+
+function saveUsersToStorage() {
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('currentUserId', currentUserId);
+}
+
+function populateUserSelect() {
+    const sel = document.getElementById('userSelect');
+    if (!sel) return;
+    sel.innerHTML = users.map(u => `<option value="${u.id}">${escapeHtml(u.name)}</option>`).join('');
+    sel.value = currentUserId;
+}
+
+function addUser() {
+    const name = prompt('Enter new user name');
+    if (!name) return;
+    const id = 'user_' + generateId();
+    users.push({ id, name: name.trim() });
+    currentUserId = id;
+    saveUsersToStorage();
+    populateUserSelect();
+    refreshViewForUser();
+}
+
+function refreshViewForUser() {
+    // ensure currentUserId set
+    if (!currentUserId && users.length) currentUserId = users[0].id;
+    updateSummary();
+    applyFilters();
+    updateMonthlyView();
+}
+
 // Load all expenses from database
 async function loadExpenses() {
     return new Promise((resolve, reject) => {
@@ -127,6 +184,45 @@ async function loadExpenses() {
         request.onerror = () => {
             reject(request.error);
         };
+    });
+}
+
+// Upsert (put) an expense to DB
+async function upsertExpenseToDB(expense) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put(expense);
+
+        request.onsuccess = () => {
+            resolve();
+        };
+
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
+// Clear only current user's entries from DB
+async function clearAllUserFromDB(userId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.openCursor();
+        request.onsuccess = async (e) => {
+            const cursor = e.target.result;
+            if (cursor) {
+                const rec = cursor.value;
+                if (rec.userId === userId) {
+                    cursor.delete();
+                }
+                cursor.continue();
+            } else {
+                resolve();
+            }
+        };
+        request.onerror = () => reject(request.error);
     });
 }
 
@@ -232,30 +328,43 @@ function formatDate(dateString) {
 
 // Calculate and update summary
 function updateSummary() {
-    const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    
+    // Only count current user's records
+    const userExpenses = expenses.filter(e => e.userId === currentUserId);
+
+    const totalExpenses = userExpenses
+        .filter(e => e.type !== 'income')
+        .reduce((sum, expense) => sum + expense.amount, 0);
+
+    const totalIncome = userExpenses
+        .filter(e => e.type === 'income')
+        .reduce((sum, expense) => sum + expense.amount, 0);
+
     const today = new Date().toISOString().split('T')[0];
-    const todayTotal = expenses
-        .filter(expense => expense.date === today)
+    const todayExpenses = userExpenses
+        .filter(expense => expense.date === today && expense.type !== 'income')
         .reduce((sum, expense) => sum + expense.amount, 0);
-    
+
     const currentMonth = getMonthKey(today);
-    const monthTotal = expenses
-        .filter(expense => expense.month === currentMonth)
+    const monthExpenses = userExpenses
+        .filter(expense => expense.month === currentMonth && expense.type !== 'income')
         .reduce((sum, expense) => sum + expense.amount, 0);
-    
-    totalAmountEl.textContent = formatCurrency(total);
-    todayAmountEl.textContent = formatCurrency(todayTotal);
-    monthAmountEl.textContent = formatCurrency(monthTotal);
-    entryCountEl.textContent = expenses.length;
-    
+
+    totalAmountEl.textContent = formatCurrency(totalExpenses);
+    const totalIncomeElLocal = document.getElementById('totalIncome');
+    if (totalIncomeElLocal) totalIncomeElLocal.textContent = formatCurrency(totalIncome);
+    const balanceElLocal = document.getElementById('balance');
+    if (balanceElLocal) balanceElLocal.textContent = formatCurrency(totalIncome - totalExpenses);
+    todayAmountEl.textContent = formatCurrency(todayExpenses);
+    monthAmountEl.textContent = formatCurrency(monthExpenses);
+    entryCountEl.textContent = userExpenses.length;
+
     // Show/hide clear all button
-    clearAllBtn.classList.toggle('is-hidden', expenses.length === 0);
+    clearAllBtn.classList.toggle('is-hidden', userExpenses.length === 0);
 }
 
 // Render expenses list
 function renderExpenses(categoryFilter = 'all', dateFilter = null) {
-    let filteredExpenses = expenses;
+    let filteredExpenses = expenses.filter(e => e.userId === currentUserId);
     
     // Apply category filter
     if (categoryFilter !== 'all') {
@@ -296,9 +405,9 @@ function renderExpenses(categoryFilter = 'all', dateFilter = null) {
                     <span class="category-badge">${escapeHtml(getCategoryLabel(expense.category))}</span>
                 </div>
                 <div class="source">Source: ${escapeHtml(expense.source || 'Not specified')}</div>
-                <div class="details">${formatDate(expense.date)}</div>
+                <div class="details">${formatDate(expense.date)} • ${escapeHtml(expense.type || 'expense')}</div>
             </div>
-            <div class="expense-amount">${formatCurrency(expense.amount)}</div>
+            <div class="expense-amount ${expense.type === 'income' ? 'income-amount' : ''}">${formatCurrency(expense.amount)}</div>
             <button class="btn-delete" onclick="deleteExpense('${expense.id}')" title="Delete">×</button>
         </div>
     `).join('');
@@ -329,6 +438,8 @@ async function addExpense(e) {
         source: sourceInput.value.trim(),
         category: categoryInput.value,
         amount: parseFloat(amountInput.value),
+        type: (document.getElementById('type') && document.getElementById('type').value) || 'expense',
+        userId: currentUserId,
         createdAt: new Date().toISOString()
     };
     
@@ -369,8 +480,8 @@ async function deleteExpense(id) {
 async function clearAllExpenses() {
     if (confirm('Are you sure you want to delete ALL expenses? This cannot be undone.')) {
         try {
-            await clearAllFromDB();
-            expenses = [];
+            await clearAllUserFromDB(currentUserId);
+            expenses = expenses.filter(e => e.userId !== currentUserId);
             updateSummary();
             renderExpenses();
             updateMonthlyView();
@@ -406,13 +517,13 @@ function formatMonthLabel(date) {
 // Update monthly view
 function updateMonthlyView() {
     const monthKey = `${currentViewMonth.getFullYear()}-${String(currentViewMonth.getMonth() + 1).padStart(2, '0')}`;
-    const monthExpenses = expenses.filter(expense => expense.month === monthKey);
+    const monthExpenses = expenses.filter(expense => expense.month === monthKey && expense.userId === currentUserId);
     
     // Update month label
     currentMonthLabelEl.textContent = formatMonthLabel(currentViewMonth);
     
     // Calculate totals
-    const monthTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const monthTotal = monthExpenses.filter(e => e.type !== 'income').reduce((sum, exp) => sum + exp.amount, 0);
     const daysInMonth = new Date(currentViewMonth.getFullYear(), currentViewMonth.getMonth() + 1, 0).getDate();
     const dailyAvg = monthExpenses.length > 0 ? monthTotal / daysInMonth : 0;
     
@@ -431,7 +542,7 @@ function renderCategoryChart(monthExpenses) {
     const categoryTotals = {};
     let maxTotal = 0;
     
-    monthExpenses.forEach(expense => {
+    monthExpenses.filter(e => e.type !== 'income').forEach(expense => {
         categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
         if (categoryTotals[expense.category] > maxTotal) {
             maxTotal = categoryTotals[expense.category];
@@ -516,6 +627,21 @@ async function init() {
     try {
         await initDB();
         await loadExpenses();
+        // Load or create users
+        loadUsersFromStorage();
+        populateUserSelect();
+        // Wire up user controls
+        const addUserBtn = document.getElementById('addUserBtn');
+        const userSelect = document.getElementById('userSelect');
+        if (addUserBtn) addUserBtn.addEventListener('click', addUser);
+        if (userSelect) userSelect.addEventListener('change', (e) => { currentUserId = e.target.value; saveUsersToStorage(); refreshViewForUser(); });
+        // Migrate existing DB records that lack userId or type to current user
+        for (const rec of expenses) {
+            let changed = false;
+            if (!rec.userId) { rec.userId = currentUserId; changed = true; }
+            if (!rec.type) { rec.type = 'expense'; changed = true; }
+            if (changed) await upsertExpenseToDB(rec);
+        }
         
         // Migrate from localStorage if needed
         const oldData = localStorage.getItem('expenses');
@@ -532,9 +658,7 @@ async function init() {
         }
         
         setDefaultDate();
-        updateSummary();
-        renderExpenses();
-        updateMonthlyView();
+        refreshViewForUser();
     } catch (error) {
         console.error('Initialization error:', error);
         showDBStatus('Failed to Initialize', true);

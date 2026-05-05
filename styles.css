@@ -67,6 +67,27 @@ header h1 {
     font-weight: bold;
 }
 
+.user-controls {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-add-small {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: white;
+    color: #667eea;
+    border: 1px solid rgba(102,126,234,0.2);
+    cursor: pointer;
+}
+
+.income-amount {
+    color: #1abc9c;
+}
+
 .total-card .amount {
     color: #667eea;
 }
