@@ -366,8 +366,16 @@ function updateSummary() {
     if (monthAmountEl) monthAmountEl.textContent = formatCurrency(monthExpenses);
     entryCountEl.textContent = userExpenses.length;
 
-    // Show/hide clear all button
-    clearAllBtn.classList.toggle('is-hidden', userExpenses.length === 0);
+    updateClearAllButtonVisibility();
+}
+
+function updateClearAllButtonVisibility(typeFilter = filterType ? filterType.value : 'expense') {
+    if (!clearAllBtn) return;
+
+    const userExpenses = expenses.filter(e => e.userId === currentUserId && e.type !== 'income');
+    const shouldShow = typeFilter !== 'income' && userExpenses.length > 0;
+
+    clearAllBtn.classList.toggle('is-hidden', !shouldShow);
 }
 
 // Render expenses list
@@ -435,6 +443,8 @@ function applyFilters() {
     const typeValue = filterType ? filterType.value : 'expense';
     const categoryFilter = filterCategory.value;
     const dateFilter = filterDate.value || null;
+
+    updateClearAllButtonVisibility(typeValue);
 
     // Update history title based on selected transaction type
     if (historyTitle) {
@@ -542,8 +552,8 @@ async function deleteExpense(id) {
 async function clearAllExpenses() {
     if (confirm('Are you sure you want to delete ALL expenses? This cannot be undone.')) {
         try {
-            await clearAllUserFromDB(currentUserId);
-            expenses = expenses.filter(e => e.userId !== currentUserId);
+            await clearAllUserExpensesFromDB(currentUserId);
+            expenses = expenses.filter(e => e.userId !== currentUserId || e.type === 'income');
             updateSummary();
             renderExpenses();
             updateMonthlyView();
@@ -552,6 +562,30 @@ async function clearAllExpenses() {
             alert('Failed to clear expenses. Please try again.');
         }
     }
+}
+
+// Clear only the current user's expense entries from DB
+async function clearAllUserExpensesFromDB(userId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.openCursor();
+
+        request.onsuccess = (e) => {
+            const cursor = e.target.result;
+            if (cursor) {
+                const rec = cursor.value;
+                if (rec.userId === userId && rec.type !== 'income') {
+                    cursor.delete();
+                }
+                cursor.continue();
+            } else {
+                resolve();
+            }
+        };
+
+        request.onerror = () => reject(request.error);
+    });
 }
 
 // Tab switching
