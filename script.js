@@ -370,7 +370,7 @@ function updateSummary() {
 
 // Render expenses list
 function renderExpenses(categoryFilter = 'all', dateFilter = null) {
-    let filteredExpenses = expenses.filter(e => e.userId === currentUserId);
+    let filteredExpenses = expenses.filter(e => e.userId === currentUserId && e.type !== 'income');
     
     // Apply category filter
     if (categoryFilter !== 'all') {
@@ -555,13 +555,14 @@ function formatMonthLabel(date) {
 // Update monthly view
 function updateMonthlyView() {
     const monthKey = `${currentViewMonth.getFullYear()}-${String(currentViewMonth.getMonth() + 1).padStart(2, '0')}`;
-    const monthExpenses = expenses.filter(expense => expense.month === monthKey && expense.userId === currentUserId);
+    const monthEntries = expenses.filter(expense => expense.month === monthKey && expense.userId === currentUserId);
+    const monthExpenses = monthEntries.filter(e => e.type !== 'income');
     
     // Update month label
     currentMonthLabelEl.textContent = formatMonthLabel(currentViewMonth);
     
     // Calculate totals
-    const monthTotal = monthExpenses.filter(e => e.type !== 'income').reduce((sum, exp) => sum + exp.amount, 0);
+    const monthTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
     const daysInMonth = new Date(currentViewMonth.getFullYear(), currentViewMonth.getMonth() + 1, 0).getDate();
     const dailyAvg = monthExpenses.length > 0 ? monthTotal / daysInMonth : 0;
     
@@ -580,7 +581,7 @@ function renderCategoryChart(monthExpenses) {
     const categoryTotals = {};
     let maxTotal = 0;
     
-    monthExpenses.filter(e => e.type !== 'income').forEach(expense => {
+    monthExpenses.forEach(expense => {
         categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
         if (categoryTotals[expense.category] > maxTotal) {
             maxTotal = categoryTotals[expense.category];
