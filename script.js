@@ -360,8 +360,8 @@ function updateSummary() {
     if (totalIncomeElLocal) totalIncomeElLocal.textContent = formatCurrency(totalIncome);
     const balanceElLocal = document.getElementById('balance');
     if (balanceElLocal) balanceElLocal.textContent = formatCurrency(totalIncome - totalExpenses);
-    todayAmountEl.textContent = formatCurrency(todayExpenses);
-    monthAmountEl.textContent = formatCurrency(monthExpenses);
+    if (todayAmountEl) todayAmountEl.textContent = formatCurrency(todayExpenses);
+    if (monthAmountEl) monthAmountEl.textContent = formatCurrency(monthExpenses);
     entryCountEl.textContent = userExpenses.length;
 
     // Show/hide clear all button
