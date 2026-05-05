@@ -372,9 +372,11 @@ function updateSummary() {
 function updateClearAllButtonVisibility(typeFilter = filterType ? filterType.value : 'expense') {
     if (!clearAllBtn) return;
 
-    const userExpenses = expenses.filter(e => e.userId === currentUserId && e.type !== 'income');
-    const shouldShow = typeFilter !== 'income' && userExpenses.length > 0;
+    const clearMode = typeFilter === 'income' ? 'income' : 'expense';
+    const userEntries = expenses.filter(e => e.userId === currentUserId && (clearMode === 'income' ? e.type === 'income' : e.type !== 'income'));
+    const shouldShow = userEntries.length > 0;
 
+    clearAllBtn.textContent = clearMode === 'income' ? 'Clear All Income' : 'Clear All Expenses';
     clearAllBtn.classList.toggle('is-hidden', !shouldShow);
 }
 
@@ -550,10 +552,16 @@ async function deleteExpense(id) {
 
 // Clear all expenses
 async function clearAllExpenses() {
-    if (confirm('Are you sure you want to delete ALL expenses? This cannot be undone.')) {
+    const selectedType = filterType ? filterType.value : 'expense';
+    const clearMode = selectedType === 'income' ? 'income' : 'expense';
+    const confirmMessage = clearMode === 'income'
+        ? 'Are you sure you want to delete ALL income? This cannot be undone.'
+        : 'Are you sure you want to delete ALL expenses? This cannot be undone.';
+
+    if (confirm(confirmMessage)) {
         try {
-            await clearAllUserExpensesFromDB(currentUserId);
-            expenses = expenses.filter(e => e.userId !== currentUserId || e.type === 'income');
+            await clearAllUserEntriesFromDB(currentUserId, clearMode);
+            expenses = expenses.filter(e => e.userId !== currentUserId || (clearMode === 'income' ? e.type !== 'income' : e.type === 'income'));
             updateSummary();
             renderExpenses();
             updateMonthlyView();
@@ -564,8 +572,8 @@ async function clearAllExpenses() {
     }
 }
 
-// Clear only the current user's expense entries from DB
-async function clearAllUserExpensesFromDB(userId) {
+// Clear only the current user's entries of the selected type from DB
+async function clearAllUserEntriesFromDB(userId, clearMode) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([STORE_NAME], 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
@@ -575,7 +583,8 @@ async function clearAllUserExpensesFromDB(userId) {
             const cursor = e.target.result;
             if (cursor) {
                 const rec = cursor.value;
-                if (rec.userId === userId && rec.type !== 'income') {
+                const matchesMode = clearMode === 'income' ? rec.type === 'income' : rec.type !== 'income';
+                if (rec.userId === userId && matchesMode) {
                     cursor.delete();
                 }
                 cursor.continue();
