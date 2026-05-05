@@ -1,10 +1,15 @@
 // Get DOM elements
 const expenseForm = document.getElementById('expenseForm');
-const dateInput = document.getElementById('date');
-const descriptionInput = document.getElementById('description');
-const sourceInput = document.getElementById('source');
-const categoryInput = document.getElementById('category');
-const amountInput = document.getElementById('amount');
+const incomeForm = document.getElementById('incomeForm');
+const expDateInput = document.getElementById('expDate');
+const expDescriptionInput = document.getElementById('expDescription');
+const expSourceInput = document.getElementById('expSource');
+const expCategoryInput = document.getElementById('expCategory');
+const expAmountInput = document.getElementById('expAmount');
+const incDateInput = document.getElementById('incDate');
+const incDescriptionInput = document.getElementById('incDescription');
+const incSourceInput = document.getElementById('incSource');
+const incAmountInput = document.getElementById('incAmount');
 const expensesList = document.getElementById('expensesList');
 const filterCategory = document.getElementById('filterCategory');
 const filterDate = document.getElementById('filterDate');
@@ -284,7 +289,8 @@ async function clearAllFromDB() {
 // Set default date to today
 function setDefaultDate() {
     const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
+    expDateInput.value = today;
+    incDateInput.value = today;
 }
 
 // Generate unique ID
@@ -432,13 +438,13 @@ async function addExpense(e) {
     
     const expense = {
         id: generateId(),
-        date: dateInput.value,
-        month: getMonthKey(dateInput.value),
-        description: descriptionInput.value.trim(),
-        source: sourceInput.value.trim(),
-        category: categoryInput.value,
-        amount: parseFloat(amountInput.value),
-        type: (document.getElementById('type') && document.getElementById('type').value) || 'expense',
+        date: expDateInput.value,
+        month: getMonthKey(expDateInput.value),
+        description: expDescriptionInput.value.trim(),
+        source: expSourceInput.value.trim(),
+        category: expCategoryInput.value,
+        amount: parseFloat(expAmountInput.value),
+        type: 'expense',
         userId: currentUserId,
         createdAt: new Date().toISOString()
     };
@@ -453,14 +459,46 @@ async function addExpense(e) {
         // Reset form
         expenseForm.reset();
         setDefaultDate();
-        descriptionInput.focus();
+        expDescriptionInput.focus();
     } catch (error) {
         console.error('Error saving expense:', error);
         alert('Failed to save expense. Please try again.');
     }
 }
 
-// Delete expense
+// Add new income
+async function addIncome(e) {
+    e.preventDefault();
+    
+    const income = {
+        id: generateId(),
+        date: incDateInput.value,
+        month: getMonthKey(incDateInput.value),
+        description: incDescriptionInput.value.trim(),
+        source: incSourceInput.value.trim(),
+        category: 'income',
+        amount: parseFloat(incAmountInput.value),
+        type: 'income',
+        userId: currentUserId,
+        createdAt: new Date().toISOString()
+    };
+    
+    try {
+        await saveExpenseToDB(income);
+        expenses.push(income);
+        updateSummary();
+        applyFilters();
+        updateMonthlyView();
+        
+        // Reset form
+        incomeForm.reset();
+        setDefaultDate();
+        incDescriptionInput.focus();
+    } catch (error) {
+        console.error('Error saving income:', error);
+        alert('Failed to save income. Please try again.');
+    }
+}
 async function deleteExpense(id) {
     if (confirm('Are you sure you want to delete this expense?')) {
         try {
@@ -605,10 +643,28 @@ function navigateMonth(direction) {
 
 // Event listeners
 expenseForm.addEventListener('submit', addExpense);
+incomeForm.addEventListener('submit', addIncome);
 filterCategory.addEventListener('change', applyFilters);
 filterDate.addEventListener('change', applyFilters);
 clearDateFilterBtn.addEventListener('click', clearDateFilter);
 clearAllBtn.addEventListener('click', clearAllExpenses);
+
+// Form toggle
+document.getElementById('expenseTabBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.form-tab-btn').forEach(btn => btn.classList.remove('active'));
+    e.target.classList.add('active');
+    document.querySelectorAll('.transaction-form').forEach(form => form.classList.remove('active'));
+    expenseForm.classList.add('active');
+});
+
+document.getElementById('incomeTabBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.form-tab-btn').forEach(btn => btn.classList.remove('active'));
+    e.target.classList.add('active');
+    document.querySelectorAll('.transaction-form').forEach(form => form.classList.remove('active'));
+    incomeForm.classList.add('active');
+});
 
 // Tab navigation
 tabBtns.forEach(btn => {

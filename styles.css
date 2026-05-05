@@ -177,8 +177,8 @@ header h1 {
     }
 }
 
-/* Add Expense Section */
-.add-expense-section {
+/* Add Transaction Section */
+.add-transaction-section {
     background: white;
     border-radius: 15px;
     padding: 30px;
@@ -186,11 +186,41 @@ header h1 {
     height: fit-content;
 }
 
-.add-expense-section h2 {
-    color: #333;
-    margin-bottom: 25px;
+.form-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
     padding-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
+}
+
+.form-tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    color: #999;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    margin-bottom: -17px;
+}
+
+.form-tab-btn:hover {
+    color: #667eea;
+}
+
+.form-tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.transaction-form {
+    display: none;
+}
+
+.transaction-form.active {
+    display: block;
 }
 
 .form-group {
@@ -237,6 +267,14 @@ header h1 {
 .btn-add:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-income {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.btn-income:hover {
+    box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
 }
 
 /* Expenses List Section */

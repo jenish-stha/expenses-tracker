@@ -46,31 +46,29 @@
         <div class="main-content">
             <!-- Daily View Tab -->
             <div id="dailyTab" class="tab-content active">
-                <section class="add-expense-section">
-                    <h2>Add New Expense</h2>
-                    <form id="expenseForm">
+                <section class="add-transaction-section">
+                    <div class="form-toggle">
+                        <button id="expenseTabBtn" class="form-tab-btn active" data-form="expense">💸 Add Expense</button>
+                        <button id="incomeTabBtn" class="form-tab-btn" data-form="income">💰 Add Income</button>
+                    </div>
+
+                    <!-- Expense Form -->
+                    <form id="expenseForm" class="transaction-form active">
                         <div class="form-group">
-                            <label for="date">Date</label>
-                            <input type="date" id="date" required>
+                            <label for="expDate">Date</label>
+                            <input type="date" id="expDate" required>
                         </div>
                         <div class="form-group">
-                            <label for="description">Description</label>
-                            <input type="text" id="description" placeholder="What did you spend on?" required>
+                            <label for="expDescription">Description</label>
+                            <input type="text" id="expDescription" placeholder="What did you spend on?" required>
                         </div>
                         <div class="form-group">
-                            <label for="type">Type</label>
-                            <select id="type" required>
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
-                            </select>
+                            <label for="expSource">Money Source</label>
+                            <input type="text" id="expSource" placeholder="Wallet, card, bank transfer, etc." required>
                         </div>
                         <div class="form-group">
-                            <label for="source">Money Source</label>
-                            <input type="text" id="source" placeholder="Salary, pocket money, bank transfer, etc." required>
-                        </div>
-                        <div class="form-group">
-                            <label for="category">Category</label>
-                            <select id="category" required>
+                            <label for="expCategory">Category</label>
+                            <select id="expCategory" required>
                                 <option value="">Select category</option>
                                 <option value="food">🍔 Food & Dining</option>
                                 <option value="transport">🚗 Transportation</option>
@@ -83,10 +81,31 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="amount">Amount (Rs.)</label>
-                            <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
+                            <label for="expAmount">Amount (Rs.)</label>
+                            <input type="number" id="expAmount" placeholder="0.00" step="0.01" min="0" required>
                         </div>
                         <button type="submit" class="btn-add">Add Expense</button>
+                    </form>
+
+                    <!-- Income Form -->
+                    <form id="incomeForm" class="transaction-form">
+                        <div class="form-group">
+                            <label for="incDate">Date</label>
+                            <input type="date" id="incDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="incDescription">Description</label>
+                            <input type="text" id="incDescription" placeholder="Salary, freelance, bonus, etc." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="incSource">Income Source</label>
+                            <input type="text" id="incSource" placeholder="Employer, client, bank, etc." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="incAmount">Amount (Rs.)</label>
+                            <input type="number" id="incAmount" placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+                        <button type="submit" class="btn-add btn-income">Add Income</button>
                     </form>
                 </section>
 
