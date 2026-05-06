@@ -23,6 +23,7 @@ const clearAllBtn = document.getElementById('clearAll');
 const totalAmountEl = document.getElementById('totalAmount');
 const todayAmountEl = document.getElementById('todayAmount');
 const monthAmountEl = document.getElementById('monthAmount');
+const monthDailyAvgEl = document.getElementById('monthDailyAvg');
 const entryCountEl = document.getElementById('entryCount');
 
 // Monthly view elements
@@ -338,6 +339,7 @@ function formatDate(dateString) {
 function updateSummary() {
     // Only count current user's records
     const userExpenses = expenses.filter(e => e.userId === currentUserId);
+    const todayDate = new Date();
 
     const totalExpenses = userExpenses
         .filter(e => e.type !== 'income')
@@ -347,7 +349,7 @@ function updateSummary() {
         .filter(e => e.type === 'income')
         .reduce((sum, expense) => sum + expense.amount, 0);
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayDate.toISOString().split('T')[0];
     const todayExpenses = userExpenses
         .filter(expense => expense.date === today && expense.type !== 'income')
         .reduce((sum, expense) => sum + expense.amount, 0);
@@ -356,6 +358,8 @@ function updateSummary() {
     const monthExpenses = userExpenses
         .filter(expense => expense.month === currentMonth && expense.type !== 'income')
         .reduce((sum, expense) => sum + expense.amount, 0);
+    const daysInCurrentMonth = new Date(todayDate.getFullYear(), todayDate.getMonth() + 1, 0).getDate();
+    const monthDailyAverage = monthExpenses / daysInCurrentMonth;
 
     totalAmountEl.textContent = formatCurrency(totalExpenses);
     const totalIncomeElLocal = document.getElementById('totalIncome');
@@ -364,6 +368,7 @@ function updateSummary() {
     if (balanceElLocal) balanceElLocal.textContent = formatCurrency(totalIncome - totalExpenses);
     if (todayAmountEl) todayAmountEl.textContent = formatCurrency(todayExpenses);
     if (monthAmountEl) monthAmountEl.textContent = formatCurrency(monthExpenses);
+    if (monthDailyAvgEl) monthDailyAvgEl.textContent = formatCurrency(monthDailyAverage);
     entryCountEl.textContent = userExpenses.length;
 
     updateClearAllButtonVisibility();
